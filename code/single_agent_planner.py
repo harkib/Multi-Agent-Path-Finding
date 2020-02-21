@@ -87,13 +87,12 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     #               by time step, see build_constraint_table.
 
     if next_time in constraint_table:
-        print(constraint_table)
-        print("time:", next_time)
-        print("loc", next_loc)
-        if constraint_table[next_time] == [next_loc]:
-            print("is_con")
+        if len(constraint_table[next_time]) == 1:
+            if constraint_table[next_time] == [next_loc]:
+                return True
+        elif constraint_table[next_time] == [curr_loc, next_loc]:
             return True
-    
+
     return False
 
 
