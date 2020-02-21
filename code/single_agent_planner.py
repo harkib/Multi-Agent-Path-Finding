@@ -122,11 +122,13 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     # Task 1.1: Extend the A* search to search in the space-time domain
     #           rather than space domain, only.
     constraint_table = build_constraint_table(constraints,agent)
-    print("agent:", agent)
-    print(constraint_table)
+    print("agent")
     open_list = []
     closed_list = dict()
-    earliest_goal_timestep = 0
+    if len(constraint_table.keys()) != 0:
+        earliest_goal_timestep = max(constraint_table.keys())
+    else:
+        earliest_goal_timestep = 0
     h_value = h_values[start_loc]
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'timestep':0}
     push_node(open_list, root)
@@ -134,9 +136,13 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     while len(open_list) > 0:
         
         curr = pop_node(open_list)
+        print ("--curr--")
+        print(curr['loc'])
+        print(curr['timestep'])
+        print ("--------")
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
-        if curr['loc'] == goal_loc:
+        if curr['loc'] == goal_loc and curr['timestep'] >= earliest_goal_timestep:          
             return get_path(curr)
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
@@ -147,13 +153,18 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                     'h_val': h_values[child_loc],
                     'parent': curr,
                     'timestep':curr['timestep']+ 1}
-            if (child['loc'], root['timestep']) in closed_list:
-                existing_node = closed_list[(root['loc'],root['timestep'])]
+            if (child['loc'], child['timestep']) in closed_list:
+                existing_node = closed_list[(child['loc'],child['timestep'])]
                 if compare_nodes(child, existing_node):
-                    closed_list[(root['loc'],root['timestep'])] = child
+                    closed_list[(child['loc'],child['timestep'])] = child
+                    print(child['loc'])
+                    print(child['timestep'])
                     push_node(open_list, child)
             else:
-                closed_list[(root['loc'],root['timestep'])] = child
+                closed_list[(child['loc'],child['timestep'])] = child
+                #if curr['loc'] == goal_loc:
+                print(child['loc'])
+                print(child['timestep'])
                 push_node(open_list, child)
 
     return None  # Failed to find solutions
