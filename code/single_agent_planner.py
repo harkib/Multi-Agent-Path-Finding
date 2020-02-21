@@ -56,8 +56,13 @@ def build_constraint_table(constraints, agent):
     constraint_table = dict()
     for constraint in constraints:
         if constraint['agent'] == agent:
-            constraint_table[constraint['timestep']] = constraint['loc']
-
+            if constraint['timestep'] in constraint_table.keys():
+                temp = list()
+                temp = constraint_table[constraint['timestep']]
+                temp.append(constraint['loc'])
+                constraint_table[constraint['timestep']] = temp
+            else:
+                constraint_table[constraint['timestep']] = [constraint['loc']]
     return constraint_table
 
 
@@ -87,11 +92,12 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     #               by time step, see build_constraint_table.
 
     if next_time in constraint_table:
-        if len(constraint_table[next_time]) == 1:
-            if constraint_table[next_time] == [next_loc]:
+        for loc in constraint_table[next_time]:
+            if len(loc) == 1:
+                if loc == [next_loc]:
+                    return True
+            elif constraint_table[next_time] == [curr_loc, next_loc]:
                 return True
-        elif constraint_table[next_time] == [curr_loc, next_loc]:
-            return True
 
     return False
 
@@ -122,6 +128,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     # Task 1.1: Extend the A* search to search in the space-time domain
     #           rather than space domain, only.
     constraint_table = build_constraint_table(constraints,agent)
+    print(constraint_table)
     print("agent")
     open_list = []
     closed_list = dict()
@@ -136,10 +143,6 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     while len(open_list) > 0:
         
         curr = pop_node(open_list)
-        print ("--curr--")
-        print(curr['loc'])
-        print(curr['timestep'])
-        print ("--------")
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
         if curr['loc'] == goal_loc and curr['timestep'] >= earliest_goal_timestep:          
@@ -157,14 +160,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                 existing_node = closed_list[(child['loc'],child['timestep'])]
                 if compare_nodes(child, existing_node):
                     closed_list[(child['loc'],child['timestep'])] = child
-                    print(child['loc'])
-                    print(child['timestep'])
                     push_node(open_list, child)
             else:
                 closed_list[(child['loc'],child['timestep'])] = child
-                #if curr['loc'] == goal_loc:
-                print(child['loc'])
-                print(child['timestep'])
                 push_node(open_list, child)
 
     return None  # Failed to find solutions
