@@ -96,7 +96,7 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
             if len(loc) == 1:
                 if loc == [next_loc]:
                     return True
-            elif constraint_table[next_time] == [curr_loc, next_loc]:
+            elif loc == [curr_loc, next_loc]:
                 return True
 
     return False
@@ -128,8 +128,6 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     # Task 1.1: Extend the A* search to search in the space-time domain
     #           rather than space domain, only.
     constraint_table = build_constraint_table(constraints,agent)
-    print(constraint_table)
-    print("agent")
     open_list = []
     closed_list = dict()
     if len(constraint_table.keys()) != 0:

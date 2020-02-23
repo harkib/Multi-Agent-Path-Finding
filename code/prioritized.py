@@ -55,6 +55,8 @@ class PrioritizedPlanningSolver(object):
                     if k != i:
                         constraint = {'agent': k,'loc': [path[j]],'timestep': j}
                         constraints.append(constraint)
+                        constraint = {'agent': k,'loc': [path[j],path[j-1]],'timestep': j}
+                        constraints.append(constraint)
 
             ##############################
 
