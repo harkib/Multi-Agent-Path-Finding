@@ -12,7 +12,14 @@ def detect_collision(path1, path2):
     #           An edge collision occurs if the robots swap their location at the same timestep.
     #           You should use "get_location(path, t)" to get the location of a robot at time t.
 
-    pass
+    
+    for t in range(max(len(path1),len(path2))):
+        if get_location(path1,t) == get_location(path2,t):
+            return {"loc":get_location(path1,t),"timestep":t}
+        elif t > 0 and get_location(path1,t-1) == get_location(path2,t) and get_location(path1,t) == get_location(path2,t-1):
+            return {"loc":(get_location(path2,t-1),get_location(path2,t)),"timestep":t}
+
+    return {}
 
 
 def detect_collisions(paths):
@@ -21,9 +28,16 @@ def detect_collisions(paths):
     #           A collision can be represented as dictionary that contains the id of the two robots, the vertex or edge
     #           causing the collision, and the timestep at which the collision occurred.
     #           You should use your detect_collision function to find a collision between two robots.
+    collisions = []
+    for i in range(len(paths)-1):
+        for j in range(i+1,len(paths)):
+            collision = detect_collision(paths[i],paths[j])
+            if collision != {}:
+                collision["a1"] = i 
+                collision["a2"] = j
+                collisions.append(collision)
 
-    pass
-
+    return collisions
 
 def standard_splitting(collision):
     ##############################
@@ -118,6 +132,8 @@ class CBSSolver(object):
 
         # Task 3.1: Testing
         print(root['collisions'])
+        print("root['paths']",root['paths'])
+        print("detect_collisions",detect_collisions(root['paths']))
 
         # Task 3.2: Testing
         for collision in root['collisions']:
