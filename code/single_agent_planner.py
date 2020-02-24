@@ -148,7 +148,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     closed_list[(root['loc'],root['timestep'])] = root
 
     #task 2.4 m,n map demensions
-    m = 4
+    m = 6
     n = 7
     upperboundTimestep = (1+agent)*m*n
     while len(open_list) > 0:
@@ -156,6 +156,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         #Task 2.4
         curr = pop_node(open_list)
         if curr['timestep'] > upperboundTimestep:
+            print("Hit upper bound:",upperboundTimestep, "timesteps" )
             return None  # Failed to find solutions
 
         #############################
@@ -179,5 +180,5 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             else:
                 closed_list[(child['loc'],child['timestep'])] = child
                 push_node(open_list, child)
-
+                
     return None  # Failed to find solutions
