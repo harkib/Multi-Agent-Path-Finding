@@ -90,6 +90,15 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     # Task 1.2/1.3: Check if a move from curr_loc to next_loc at time step next_time violates
     #               any given constraint. For efficiency the constraints are indexed in a constraint_table
     #               by time step, see build_constraint_table.
+    
+    
+    #extend goal locations to all t after goal task #2.3 
+    #only for the 2 agent case, will fail for 3+ agents
+    
+    
+    if len(constraint_table.keys()) != 0:
+        if next_time > max(constraint_table.keys()):
+            next_time = max(constraint_table.keys())
 
     if next_time in constraint_table:
         for loc in constraint_table[next_time]:
@@ -98,7 +107,6 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
                     return True
             elif loc == [curr_loc, next_loc]:
                 return True
-
     return False
 
 
@@ -138,9 +146,18 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'timestep':0}
     push_node(open_list, root)
     closed_list[(root['loc'],root['timestep'])] = root
+
+    #task 2.4 m,n map demensions
+    m = 4
+    n = 7
+    upperboundTimestep = (1+agent)*m*n
     while len(open_list) > 0:
         
+        #Task 2.4
         curr = pop_node(open_list)
+        if curr['timestep'] > upperboundTimestep:
+            return None  # Failed to find solutions
+
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
         if curr['loc'] == goal_loc and curr['timestep'] >= earliest_goal_timestep:          
