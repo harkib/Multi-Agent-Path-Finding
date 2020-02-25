@@ -94,11 +94,10 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     
     #extend goal locations to all t after goal task #2.3 
     #only for the 2 agent case, will fail for 3+ agents
-    
-    
-    if len(constraint_table.keys()) != 0:
-        if next_time > max(constraint_table.keys()):
-            next_time = max(constraint_table.keys())
+
+    # if len(constraint_table.keys()) != 0:
+    #     if next_time > max(constraint_table.keys()):
+    #         next_time = max(constraint_table.keys())
 
     if next_time in constraint_table:
         for loc in constraint_table[next_time]:
@@ -165,6 +164,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             return get_path(curr)
         for dir in range(5):
             child_loc = move(curr['loc'], dir)
+            #for test 1 - 50, due to lack of surrounding '@'s
+            if child_loc[0] < 0 or  child_loc[1] < 0 or  child_loc[0] > 7 or  child_loc[1] > 7 :
+                continue
             if my_map[child_loc[0]][child_loc[1]] or is_constrained(curr['loc'],child_loc,curr['timestep']+1,constraint_table):
                 continue
             child = {'loc': child_loc,

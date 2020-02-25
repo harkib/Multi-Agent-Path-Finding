@@ -2,7 +2,7 @@ import time as timer
 import heapq
 import random
 from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
-
+import copy
 
 def detect_collision(path1, path2):
     ##############################
@@ -52,8 +52,8 @@ def standard_splitting(collision):
         constraint1 = {'agent': collision['a1'],'loc': collision['loc'],'timestep': collision['timestep']}
         constraint2 = {'agent': collision['a2'],'loc': collision['loc'],'timestep': collision['timestep']}
     else:
-        constraint1 = {'agent': collision['a1'],'loc': collision['loc'],'timestep': collision['timestep']}       
-        constraint2 = {'agent': collision['a2'],'loc': [collision['loc'][1],collision['loc'][0]],'timestep': collision['timestep']}
+        constraint1 = {'agent': collision['a2'],'loc': collision['loc'],'timestep': collision['timestep']}       
+        constraint2 = {'agent': collision['a1'],'loc': [collision['loc'][1],collision['loc'][0]],'timestep': collision['timestep']}
     return [constraint1,constraint2]
 
 
@@ -136,13 +136,14 @@ class CBSSolver(object):
         self.push_node(root)
 
         # Task 3.1: Testing
-        print(root['collisions'])
-        print("root['paths']",root['paths'])
-        print("detect_collisions",detect_collisions(root['paths']))
+       # print(root['collisions'])
+        #print("root['paths']",root['paths'])
+       # print("detect_collisions",root['collisions'])
 
         # Task 3.2: Testing
-        for collision in root['collisions']:
-            print(standard_splitting(collision))
+        #for collision in root['collisions']:
+            #print("Task 3.2:" , collision)
+            #print(standard_splitting(collision))
 
         ##############################
         # Task 3.3: High-Level Search
@@ -152,10 +153,28 @@ class CBSSolver(object):
         #             3. Otherwise, choose the first collision and convert to a list of constraints (using your
         #                standard_splitting function). Add a new child node to your open list for each constraint
         #           Ensure to create a copy of any objects that your child nodes might inherit
+        while len(self.open_list) > 0:
+            curr = self.pop_node()
+            print(curr)
+            if len(curr["collisions"]) == 0:  
+                print(curr["paths"])
+                return curr["paths"]
+            constraints = standard_splitting(curr['collisions'][0])
+            for constraint in constraints:
+                child={}
+                child['constraints']= copy.deepcopy(curr['constraints'])
+                child['constraints'].append(constraint)
+                child['paths']= copy.deepcopy(curr['paths'])
+                i = constraint['agent']
+                path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],i, child['constraints'])
+                if path is not None: 
+                    child['paths'][i] = path
+                    child['collisions'] = detect_collisions(child['paths'])
+                    child['cost'] = get_sum_of_cost(child['paths'])
+                    self.push_node(child)
 
-        self.print_results(root)
-        return root['paths']
-
+            
+        raise BaseException('No solutions')
 
     def print_results(self, node):
         print("\n Found a solution! \n")
