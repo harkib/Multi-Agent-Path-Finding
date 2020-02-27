@@ -54,16 +54,29 @@ def build_constraint_table(constraints, agent):
     #               for a more efficient constraint violation check in the 
     #               is_constrained function.
     constraint_table = dict()
+    pos_constraint_table = dict()
     for constraint in constraints:
+        if not ("positive" in constraint.keys()):
+            constraint["positive"] = False
         if constraint['agent'] == agent:
-            if constraint['timestep'] in constraint_table.keys():
-                temp = list()
-                temp = constraint_table[constraint['timestep']]
-                temp.append(constraint['loc'])
-                constraint_table[constraint['timestep']] = temp
-            else:
-                constraint_table[constraint['timestep']] = [constraint['loc']]
-    return constraint_table
+            if constraint["positive"] == False:
+                if constraint['timestep'] in constraint_table.keys():
+                    temp = list()
+                    temp = constraint_table[constraint['timestep']]
+                    temp.append(constraint['loc'])
+                    constraint_table[constraint['timestep']] = temp
+                else:
+                    constraint_table[constraint['timestep']] = [constraint['loc']]
+            else: 
+                if constraint['timestep'] in pos_constraint_table.keys():
+                    temp = list()
+                    temp = pos_constraint_table[constraint['timestep']]
+                    temp.append(constraint['loc'])
+                    pos_constraint_table[constraint['timestep']] = temp
+                else:
+                    pos_constraint_table[constraint['timestep']] = [constraint['loc']]
+
+    return constraint_table, pos_constraint_table
 
 
 def get_location(path, time):
@@ -108,6 +121,20 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
                 return True
     return False
 
+def is_pos_constrained(curr_loc, next_loc, next_time, pos_constraint_table):
+    #false = failed, not in correct loc at timestep
+
+    if next_time in pos_constraint_table:
+        for loc in pos_constraint_table[next_time]:
+            if len(loc) == 1:
+                if loc == [next_loc]:
+                    return True
+            elif loc == [curr_loc, next_loc]:
+                return True
+    else:
+        return True
+
+    return False
 
 def push_node(open_list, node):
     heapq.heappush(open_list, (node['g_val'] + node['h_val'], node['h_val'], node['loc'], node))
@@ -134,7 +161,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     ##############################
     # Task 1.1: Extend the A* search to search in the space-time domain
     #           rather than space domain, only.
-    constraint_table = build_constraint_table(constraints,agent)
+    constraint_table,pos_constraint_table = build_constraint_table(constraints,agent)
+    #print("pos:", pos_constraint_table)
+    #print("reg:", constraint_table)
     open_list = []
     closed_list = dict()
     if len(constraint_table.keys()) != 0:
@@ -150,10 +179,12 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     m = 6
     n = 7
     upperboundTimestep = (1+agent)*m*n
+    upperboundTimestep = 15
     while len(open_list) > 0:
         
         #Task 2.4
         curr = pop_node(open_list)
+        #print("curr", curr)
         if curr['timestep'] > upperboundTimestep:
             print("Hit upper bound:",upperboundTimestep, "timesteps" )
             return None  # Failed to find solutions
@@ -168,6 +199,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             if child_loc[0] < 0 or  child_loc[1] < 0 or  child_loc[0] > 7 or  child_loc[1] > 7 :
                 continue
             if my_map[child_loc[0]][child_loc[1]] or is_constrained(curr['loc'],child_loc,curr['timestep']+1,constraint_table):
+                continue
+            if not is_pos_constrained(curr['loc'],child_loc,curr['timestep']+1,pos_constraint_table):
+                #print("positive con broken")
                 continue
             child = {'loc': child_loc,
                     'g_val': curr['g_val'] + 1,
